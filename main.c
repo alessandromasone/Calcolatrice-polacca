@@ -1,313 +1,189 @@
-/*=============================================================================
- |   Assignment:  CALCULATOR FOR POLISH NOTATION.
- |
- |       Author:  ALESSANDRO MASONE
- |     Language:  WRITTEN IN C
- |       Editor:  VISUAL STUDIO CODE V1.62.3
- |
- |   To Compile:  MINGW32-BASE V201307220
- |                MINGW32-GCC-G++ V6.3.0-1
- |                MINGW32-GCC-OBJC V6.3.1-1
- |
- +-----------------------------------------------------------------------------
- |
- |  Description:  BUILD A COMMAND LINE CALCULATOR THAT HANDLES 
- |                POLISH NOTATION.
- |
- |        Input:  PARAMETERS.
- |
- |       Output:  RESULT.
- |
- |    Algorithm:  TOP-DOWN.
- |
- |   Easter Egg:  IF THE OPERATOR IS "MAIN.EXE" IT WILL MULTIPLY THE
- |                PRICE TO PAY FOR THE '*' CHARACTER.
- |
- *===========================================================================*/
-
-# include   <stdio.h>
-# include   <stdlib.h>
-# include   <math.h>
-# include   <string.h>
-# include   <conio.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <dirent.h>
+#include <math.h>
+#include <sys/stat.h>
 
 #define MAX 1024
 
-float Calculate(float, float, int);
-void Error(int);
-int ControlNumber(char *);
-void Help(char *);
+// Funzione per calcolare il risultato basato sull'operatore
+float Calculate(float x, float y, char op);
 
-int posizione_errore = 0;
+// Funzione per controllare se una stringa rappresenta un numero valido
+int ControlNumber(const char *text);
 
-int main(int argc, char *argv[])
-{
-    char NAME_FILE[MAX] = {};
+// Funzione per visualizzare l'help
+void Help(const char *programName);
 
-    //var for the central parts of the main
-    float x = 0;
-    float y = 0;
-    float result = 0;
-    char op;    
+// Funzione per verificare se un file esiste
+int IsFile(const char *filename);
 
-    //var for parts of control '*'
-    int i, j;
-    int multiplex = -1;
-    int first_parameter = -1;
+// Funzione per gestire gli argomenti e rimuovere i file dalla lista
+void ProcessArguments(int *argc, char *argv[]);
 
-    //If the '*' character has been entered this will return all files present within the command directory, as it will return the command name with ".exe" added. Analyzing this state, we check and then modify argc & argv
-    strcpy(NAME_FILE, argv[0]);
-    strcat(NAME_FILE, ".exe");
-    for (i = 0; i < argc;  i++)
-        if (strcmp(argv[i], NAME_FILE) == 0)
-            multiplex = i;
-    if (multiplex != -1)
-    {
-        for (i = multiplex; i < argc;  i++)
-        {
-            if (ControlNumber(argv[i]) == 0)
-            {
-                first_parameter = i;
-                break;
-            }
-        }
-        j = 2;
-        strcpy(argv[1], "x");
-        for (i = first_parameter; i < first_parameter + 2; i++)
-            strcpy(argv[j++], argv[i]);
-        argc = 4;
-    }
-    //end section analyze '*'
+int main(int argc, char *argv[]) {
+    char op;
+    float x = 0, y = 0, result = 0;
 
-    switch (argc) //number of arguments
-    {
+    // Processiamo gli argomenti, rimuovendo i file dalla lista
+    ProcessArguments(&argc, argv);
+
+    // Gestione dei diversi casi di argomenti
+    switch (argc) {
         case 1:
-            printf("Usage: %s ? for help", argv[0]);
+            printf("Usage: %s ? per help\n", argv[0]);
             break;
         case 2:
             op = argv[1][0];
-            if (strcmp(argv[1], "help") == 0)
+            if (strcmp(argv[1], "help") == 0 || op == '?') {
                 Help(argv[0]);
-            else if (strlen(argv[1]) > 1)
-            {
-                printf("Evaluating:\n");                    
-                printf("        %s\n", argv[1]);
-                Error(0);
+            } else {
+                printf("Input non valido. Digita '%s ?' per l'help.\n", argv[0]);
             }
-            else if (op == '?')
-                Help(argv[0]);
-            else
-                printf("Usage: %s ? for help", argv[0]);
             break;
         case 3:
             op = argv[1][0];
-            if (strlen(argv[1]) > 1)
-            {
-                printf("Evaluating:\n");                    
-                printf("        %s %s\n", argv[1], argv[2]);
-                Error(0);
-            }
-            else if (op == 'q' || op == 'Q')
-            {
-                if (ControlNumber(argv[2]) == 0)
-                {
+            if (op == 'q' || op == 'Q') {
+                if (ControlNumber(argv[2]) == 0) {
                     x = atof(argv[2]);
-                    y = 0;
-                    result = Calculate(x, y, op);
-                    printf("Evaluating:\n");                    
-                    printf("        %s %s\n", argv[1], argv[2]);
-                    printf("Result:\n");
-                    printf("        %g", result);
+                    result = Calculate(x, 0, op);
+                    if (result != 0) {
+                        printf("Risultato: %g\n", result);
+                    }
+                } else {
+                    printf("Errore: numero non valido '%s'.\n", argv[2]);
                 }
-                else
-                {
-                    printf("Evaluating:\n");                    
-                    printf("        %s %s\n", argv[1], argv[2]);
-                    Error(2);
-                    
-                }
+            } else {
+                printf("Operazione non valida. Digita '%s ?' per l'help.\n", argv[0]);
             }
-            else
-                printf("Usage: %s ? for help", argv[0]);
             break;
         case 4:
             op = argv[1][0];
-            if (strlen(argv[1]) > 1)
-            {
-                printf("Evaluating:\n");                    
-                printf("        %s %s %s\n", argv[1], argv[2], argv[3]);
-                Error(0);
-            }
-            else if (op == '+' || op == '-' || op == 'x' || op == 'X' || op == '/' || op == ':' || op == 'e' || op == 'E' || op == '%')
-            {
-                if (ControlNumber(argv[2]) == 0)
-                {
-                    if (ControlNumber(argv[3]) == 0)
-                    {
-                        x = atof(argv[2]);
-                        y = atof(argv[3]);
-                        result = Calculate(x, y, op);
-                        printf("Evaluating:\n");     
-                        if (multiplex != -1)
-                            printf("        * %s %s\n", argv[2], argv[3]);
-                        else
-                            printf("        %s %s %s\n", argv[1], argv[2], argv[3]);
-                        printf("Result:\n");
-                        printf("        %g", result);
-                    }
-                    else
-                    {
-                        printf("Evaluating:\n");                    
-                        printf("        %s %s %s\n", argv[1], argv[2], argv[3]);
-                        Error(strlen(argv[1])+1+strlen(argv[2])+1);
-                    }            
+            if (ControlNumber(argv[2]) == 0 && ControlNumber(argv[3]) == 0) {
+                x = atof(argv[2]);
+                y = atof(argv[3]);
+                result = Calculate(x, y, op);
+                if (result != 0) {
+                    printf("Risultato: %g\n", result);
                 }
-                else
-                {
-                    printf("Evaluating:\n");                    
-                    printf("        %s %s %s\n", argv[1], argv[2], argv[3]);
-                    Error(strlen(argv[1])+1);
+            } else {
+                // Errori specifici per il numero non valido
+                if (ControlNumber(argv[2]) != 0) {
+                    printf("Errore: numero non valido '%s'.\n", argv[2]);
                 }
-            }
-            else
-            {
-                printf("Evaluating:\n");                    
-                printf("        %s %s %s\n", argv[1], argv[2], argv[3]);
-                Error(0);
+                if (ControlNumber(argv[3]) != 0) {
+                    printf("Errore: numero non valido '%s'.\n", argv[3]);
+                }
             }
             break;
         default:
-            printf("Usage: %s ? for help", argv[0]);
+            printf("Usage: %s ? per help\n", argv[0]);
             break;
     }
+
     return 0;
 }
 
-float Calculate(float x, float y, int op)
-{
-    float temp = 0;
-    switch (op)
-    {
-    case 43:
-        return(x+y);
-    case 45:
-        return(x-y);
-    case 120:
-        return(x*y);
-    case 88:
-        return(x*y);
-    case 47:
-        return(x/y);
-    case 58:
-        return(x/y);
-    case 101:
-        return(pow(x,y));
-    case 69:
-        return(pow(x,y));
-    case 37:
-        return((x*y)/100);
-    case 113:
-        return(sqrt(x));
-    case 81:
-        return(sqrt(x));
-    default:
-        break;
+// Funzione per calcolare il risultato basato sull'operatore
+float Calculate(float x, float y, char op) {
+    switch (op) {
+        case '+': return x + y;
+        case '-': return x - y;
+        case 'x':
+        case 'X':
+        case '*': return x * y;
+        case '/':  // Verifica divisione per zero
+        case ':':
+            if (y == 0) {
+                printf("Errore: Divisione per zero.\n");
+                return 0; // Non stampiamo "Risultato: 0" per gli errori
+            }
+            return x / y;
+        case '%': return (x * y) / 100;
+        case 'e':
+        case 'E': return pow(x, y);
+        case 'q':
+        case 'Q':
+            if (x < 0) {
+                printf("Errore: Radice quadrata di un numero negativo.\n");
+                return 0; // Non stampiamo "Risultato: 0" per gli errori
+            }
+            return sqrt(x);
+        default:
+            printf("Operazione non valida.\n");
+            return 0;
     }
 }
 
-void Error(int x)
-{
-   for (int i = 0; i < posizione_errore + 8 + x; i++)
-       printf(" ");
-   printf("^~~~~\nError near here");
+// Funzione per controllare se la stringa rappresenta un numero valido
+int ControlNumber(const char *text) {
+    int i, dotCount = 0;
 
+    // Scorre la stringa per contare i punti decimali
+    for (i = 0; text[i] != '\0'; i++) {
+        if (text[i] == '.' || text[i] == ',') {
+            dotCount++;
+            if (dotCount > 1) return 1;  // Più di un punto decimale
+            if (text[i] == ',') {
+                // Sostituisce la virgola con il punto
+                return 0;
+            }
+        }
+        if ((text[i] < '0' || text[i] > '9') && text[i] != '.') return 1;  // Carattere non valido
+    }
+    return 0; // È un numero valido
 }
 
-int ControlNumber(char *text)
-{
-    char temp[MAX];
+// Funzione di help per visualizzare le istruzioni d'uso
+void Help(const char *programName) {
+    printf("Calcolatore polacco da linea di comando\n\n");
+    printf("Uso: %s <operatore> <numero1> <numero2>\n\n", programName);
+    printf("Operatori disponibili:\n");
+    printf("  [q | Q]      : Calcola la radice quadrata del primo numero\n");
+    printf("  [+]          : Somma il primo e il secondo numero\n");
+    printf("  [-]          : Sottrae il secondo numero dal primo\n");
+    printf("  [x | X | *]  : Moltiplica il primo numero per il secondo\n");
+    printf("  [/ | :]      : Divide il primo numero per il secondo\n");
+    printf("  [%%]          : Calcola la percentuale del secondo numero sul primo\n");
+    printf("  [e | E]      : Calcola la potenza del primo numero elevato al secondo\n");
+    printf("\nEsempi:\n");
+    printf("  q 25         : Restituisce 5      (radice quadrata di 25)\n");
+    printf("  + 5 5        : Restituisce 10     (5 + 5)\n");
+    printf("  x 10 2       : Restituisce 20     (10 * 2)\n");
+    printf("  / 10 2       : Restituisce 5      (10 / 2)\n");
+    printf("  %% 100 20     : Restituisce 20     (20%% di 100)\n");
+    printf("  e 2 3        : Restituisce 8      (2 elevato alla potenza di 3)\n");
+}
+
+// Funzione per verificare se un percorso è un file
+int IsFile(const char *filename) {
+    struct stat buffer;
+    return (stat(filename, &buffer) == 0 && S_ISREG(buffer.st_mode));
+}
+
+// Funzione per processare gli argomenti e rimuovere i file dalla lista
+void ProcessArguments(int *argc, char *argv[]) {
     int i, j;
-    int segno = -1,
-    ok = 1,
-    virgola = 0;
-    int position;
-    strcpy(temp, text);
-    if (temp[0] == '-' || temp[0] == '+')
-        segno = 1;
-    else
-        segno = 0;
-    for (i = segno; i < strlen(temp); i++)
-        if (temp[i] == '.' || temp[i] == ',')
-        {
-            virgola++;
-            if (virgola == 1)
-                position = i;
-        }
-    if (virgola == 1)
-    {
-        virgola = 1;
-        text[position] = '.';
-    }
-    else if (virgola == 0)
-        virgola = 0;
-    else
-    {
-        posizione_errore = position;
-        return(1);
-    }
-    for (i = segno; i < strlen(temp); i++)
-    {
-        ok = 1;
-        for (j = 0; j < 10; j++)
-        {
-            if(temp[i] == 48 + j)
-                ok = 0;
-            if (temp[i] == '.')
-                ok = 0;
-            if (temp[i] == ',')
-                ok = 0;
-        }
-        if (ok == 1)
-        {
-            posizione_errore = i;
-            return(1);
-        }
-    }
-    return 0;
-}
+    int mod = 0;
 
-void Help(char *cm)
-{
-    printf("Calcolatrice a linea di comando.\n\n");
-    printf("%s <operatore> <numero> <numero>\n\n", cm);
-    printf(" Operatori:\n");
-    printf(" [q | Q]");
-    printf("\tEffettua la radice quadrata di un solo numero.\n");
-    printf("\t\tESEMPIO: q 25\n");
-    printf("\t\tRestituir\x85: 5\n");
-    printf(" [+]");
-    printf("\t\tEffettua la somma di due numeri.\n");
-    printf("\t\tESEMPIO: + 5 5\n");
-    printf("\t\tRestituir\x85: 10\n");
-    printf(" [-]");
-    printf("\t\tEffettua la differenza tra due numeri.\n");
-    printf("\t\tESEMPIO: - 10 2\n");
-    printf("\t\tRestituir\x85: 8\n");
-    printf(" [/ | :]");
-    printf("\tEffettua la divisione tra due numeri.\n");
-    printf("\t\tESEMPIO: / 10 2\n");
-    printf("\t\tRestituir\x85: 5\n");
-    printf(" [X | x | *]");
-    printf("\tEffettua il prodotto tra due numeri.\n");
-    printf("\t\tESEMPIO: x 10 2\n");
-    printf("\t\tRestituir\x85: 20\n");
-    printf(" [%%]");
-    printf("\t\tCalcola la percentuale del secondo numero sul primo.\n");
-    printf("\t\tESEMPIO: % 100 20\n");
-    printf("\t\tRestituir\x85: 20\n");
-    printf(" [e | E]");
-    printf("\tCalcola la potenza con base primo numero\n\t\te esponente il secondo numero.\n");
-    printf("\t\tESEMPIO: e 2 3\n");
-    printf("\t\tRestituir\x85: 8\n");
-    
+    // Scorre gli argomenti e rimuove i file
+    for (i = 1; i < *argc; i++) {
+        if (IsFile(argv[i])) {  // Se è un file
+            // Shift degli argomenti verso sinistra
+            memmove(&argv[i], &argv[i + 1], (*argc - i - 1) * sizeof(char *));
+            mod = 1;
+            (*argc)--;  // Riduce il numero di argomenti
+            i--;  // Ricontrolla l'argomento che è stato spostato
+        }
+    }
+
+    // Se sono stati rimossi file, metti '*' al posto dell'argomento
+    if (mod) {
+        for (i = *argc; i > 1; i--) {
+            argv[i] = argv[i - 1];  // Sposta ogni elemento a destra
+        }
+        argv[1] = "*";  // Metti "*" in argv[1]
+        (*argc)++;
+    }
 }

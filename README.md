@@ -1,72 +1,108 @@
-# Calcolatrice polacca
+# Calcolatrice Polacca
 
-Questo è un progetto di calcolatrice polacca scritto in linguaggio C.
-
-## Descrizione
-
-La calcolatrice polacca è un tipo di notazione matematica in cui l'operatore viene posizionato prima degli operandi anziché tra di essi come nella notazione tradizionale. Questa calcolatrice consente di eseguire operazioni matematiche utilizzando la notazione polacca.
+Un'applicazione CLI (Command Line Interface) che implementa una calcolatrice in notazione polacca inversa per eseguire operazioni matematiche di base direttamente da terminale.
 
 ## Funzionalità
+La calcolatrice supporta le seguenti operazioni:
 
-La calcolatrice polacca supporta le seguenti operazioni:
+- **Radice quadrata** (`q` o `Q`)  
+- **Somma** (`+`)  
+- **Sottrazione** (`-`)  
+- **Moltiplicazione** (`x`, `X` o `*`)  
+- **Divisione** (`/` o `:`)  
+- **Percentuale** (`%`)  
+- **Potenza** (`e` o `E`)  
 
-- Somma: `+`
-- Differenza: `-`
-- Prodotto: `x` o `*`
-- Divisione: `/` o `:`
-- Potenza: `e` o `E`
-- Percentuale: `%`
-- Radice quadrata: `q` o `Q`
+Il programma gestisce inoltre:
+- Operazioni su numeri a virgola mobile.
+- Messaggi di errore per input non validi.
+- Calcolo senza visualizzare il risultato per divisioni o radici quadrate non valide (divisione per zero e radici quadrate di numeri negativi).
+- Messaggi di help per assistenza all'utente (`help` o `?`).
 
-## Utilizzo
+## Compilazione
 
-La calcolatrice viene eseguita da riga di comando. Di seguito è riportata la sintassi generale:
+Per utilizzare questo programma su vari sistemi operativi, segui le istruzioni qui sotto:
 
-```
-calcolatrice-polacca <operatore> <numero> <numero>
-```
+### Prerequisiti
+Per tutti i sistemi, è necessario avere:
+- Un compilatore C (es. `gcc`).
 
-Dove:
-- `<operatore>`: l'operazione da eseguire.
-- `<numero>`: i numeri su cui effettuare l'operazione.
+### Istruzioni di Compilazione e Esecuzione
 
-Esempi di utilizzo:
+#### Linux/macOS
 
-- Somma: `calcolatrice-polacca + 5 5`
-  - Risultato: 10
+1. **Clona il repository:**
+   ```bash
+   git clone https://github.com/alessandromasone/calcolatrice-polacca.git
+   cd calcolatrice-polacca
+   ```
 
-- Differenza: `calcolatrice-polacca - 10 2`
-  - Risultato: 8
+2. **Compila il codice:**
+   ```bash
+   gcc -o calcolatrice_polacca main.c -lm
+   ```
+   Il flag `-lm` è richiesto per linkare la libreria matematica (`math.h`).
 
-- Prodotto: `calcolatrice-polacca x 10 2`
-  - Risultato: 20
+3. **Esegui l'applicazione:**
+   ```bash
+   ./calcolatrice_polacca
+   ```
 
-- Divisione: `calcolatrice-polacca / 10 2`
-  - Risultato: 5
+#### Windows
 
-- Potenza: `calcolatrice-polacca e 2 3`
-  - Risultato: 8
+1. **Clona il repository:** (puoi usare Git Bash o un client GUI per Git)
+   ```bash
+   git clone https://github.com/alessandromasone/calcolatrice-polacca.git
+   cd calcolatrice-polacca
+   ```
 
-- Percentuale: `calcolatrice-polacca % 100 20`
-  - Risultato: 20
+2. **Compila il codice** utilizzando `gcc` tramite MinGW o altro compilatore disponibile:
+   ```bash
+   gcc -o calcolatrice_polacca main.c -lm
+   ```
 
-- Radice quadrata: `calcolatrice-polacca q 25`
-  - Risultato: 5
+3. **Esegui l'applicazione:**
+   ```cmd
+   calcolatrice_polacca.exe
+   ```
 
-## Requisiti di compilazione
+## Esempi di Utilizzo
 
-- Linguaggio: C
-- Editor: Visual Studio Code v1.62.3
-- Compilatore: MinGW32-base v201307220, MinGW32-gcc-g++ v6.3.0-1, MinGW32-gcc-objc v6.3.1-1
+- **Help e assistenza:**  
+  ```bash
+  ./calcolatrice_polacca ?
+  ```
 
-## Esecuzione
+- **Radice quadrata:**  
+  ```bash
+  ./calcolatrice_polacca q 25
+  ```
 
-Per compilare ed eseguire il programma, seguire i seguenti passaggi:
+- **Somma:**  
+  ```bash
+  ./calcolatrice_polacca + 5 5
+  ```
 
-1. Assicurarsi che siano soddisfatti i requisiti di compilazione.
-2. Compilare il programma utilizzando il compilatore GCC.
-3. Eseguire il programma passando gli argomenti necessari.
+- **Divisione:**  
+  ```bash
+  ./calcolatrice_polacca / 10 2
+  ```
 
-## Comandi aggiuntivi
+- **Potenza:**  
+  ```bash
+  ./calcolatrice_polacca e 2 3
+  ```
 
-- `calcolatrice-polacca help`: mostra l'elenco delle operazioni supportate e fornisce informazioni sull'utilizzo.
+## Struttura del Progetto
+
+- **`main.c`**: Contiene il codice sorgente principale, inclusa la logica per il parsing degli argomenti e la gestione delle operazioni.
+- **Funzioni chiave**:
+  - `Calculate`: Gestisce le operazioni matematiche.
+  - `ControlNumber`: Verifica la validità dei numeri.
+  - `Help`: Fornisce assistenza per l'utilizzo del programma.
+  - `IsFile`: Controlla se un percorso rappresenta un file.
+  - `ProcessArguments`: Rimuove eventuali file dalla lista degli argomenti.
+
+## Licenza
+
+Distribuito sotto la **MIT License**. Vedi il file [LICENSE](LICENSE) per maggiori dettagli.
